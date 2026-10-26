@@ -151,6 +151,10 @@ class BasicAppTests(unittest.TestCase):
                         (self.test_book_id,)
                     )
 
+                # Clean up any generic test entries
+                cursor.execute("DELETE FROM AUTHOR WHERE name LIKE %s;", ("%Test%",))
+                cursor.execute("DELETE FROM BOOK WHERE title LIKE %s;", ("%Test%",))
+
             connection.commit()
 
         finally:
@@ -868,7 +872,7 @@ class BasicAppTests(unittest.TestCase):
         post_res = self.client.post(
             "/authors/add",
             data={
-                "name": "Dedicated Form Author",
+                "name": "Dedicated Form Author Test",
                 "country": "Egypt"
             }
         )
@@ -879,7 +883,7 @@ class BasicAppTests(unittest.TestCase):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT author_id, country FROM AUTHOR WHERE name = %s;",
-                    ("Dedicated Form Author",)
+                    ("Dedicated Form Author Test",)
                 )
                 author = cursor.fetchone()
         finally:
@@ -896,7 +900,7 @@ class BasicAppTests(unittest.TestCase):
         edit_post = self.client.post(
             f"/authors/{self.test_author_id}/edit",
             data={
-                "name": "Updated Author Name",
+                "name": "Updated Author Name Test",
                 "country": "UK"
             }
         )
@@ -908,13 +912,13 @@ class BasicAppTests(unittest.TestCase):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO AUTHOR (name, country) VALUES (%s, %s);",
-                    ("Cascade Parent", "Egypt")
+                    ("Cascade Parent Test", "Egypt")
                 )
                 author_id = cursor.lastrowid
 
                 cursor.execute(
                     "INSERT INTO BOOK (title, price, author_id) VALUES (%s, %s, %s);",
-                    ("Cascade Child Book", 10.00, author_id)
+                    ("Cascade Child Book Test", 10.00, author_id)
                 )
                 book_id = cursor.lastrowid
             connection.commit()
@@ -935,7 +939,13 @@ class BasicAppTests(unittest.TestCase):
         self.assertIsNone(book)
 
     def test_author_image_upload(self):
-        image_file = (io.BytesIO(b"test buffer"), "author_photo.png")
+        # Valid PNG byte buffer header
+        png_bytes = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+            b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01"
+            b"\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\aeB`\x82"
+        )
+        image_file = (io.BytesIO(png_bytes), "test_upload.png")
 
         response = self.client.post(
             "/authors/add",
@@ -947,6 +957,20 @@ class BasicAppTests(unittest.TestCase):
             content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 302)
+
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT author_id, image_url FROM AUTHOR WHERE name = %s;",
+                    ("Upload Test Author",)
+                )
+                author = cursor.fetchone()
+        finally:
+            connection.close()
+
+        if author:
+            self.test_author_id = author["author_id"]
 
 
 if __name__ == "__main__":
