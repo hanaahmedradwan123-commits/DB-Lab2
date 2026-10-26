@@ -1,14 +1,12 @@
 USE library;
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE BOOK;
-TRUNCATE TABLE AUTHOR;
 
-SET FOREIGN_KEY_CHECKS = 1;
+-- Seed Authors
 INSERT INTO AUTHOR (name, country) VALUES 
 ('Naguib Mahfouz', 'Egypt'),
 ('Agatha Christie', 'UK'),
 ('George Orwell', 'UK');
 
+-- Seed Books
 INSERT INTO BOOK (title, price, author_id) VALUES 
 ('Palace Walk', 15.99, 1),
 ('Sugar Street', 14.50, 1),
@@ -16,7 +14,3 @@ INSERT INTO BOOK (title, price, author_id) VALUES
 ('And Then There Were None', 11.50, 2),
 ('1984', 13.99, 3),
 ('Animal Farm', 9.99, 3);
-
-
-
-

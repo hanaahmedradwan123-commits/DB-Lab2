@@ -2,18 +2,40 @@ DROP DATABASE IF EXISTS library;
 CREATE DATABASE library;
 USE library;
 
+-- 1. USERS TABLE
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. TODOS TABLE
+CREATE TABLE todos (
+    todo_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    is_done TINYINT(1) DEFAULT 0,
+    due_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 3. AUTHOR TABLE
 CREATE TABLE AUTHOR (
     author_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     country VARCHAR(50),
-    image_url VARCHAR(255) DEFAULT 'https://via.placeholder.com/100'
+    image_url VARCHAR(255) DEFAULT 'uploads/placeholder.jpg'
 );
 
+-- 4. BOOK TABLE
 CREATE TABLE BOOK (
     book_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     author_id INT NOT NULL,
-    image_url VARCHAR(255) DEFAULT 'https://via.placeholder.com/100x140',
+    image_url VARCHAR(255) DEFAULT 'uploads/placeholder.jpg',
     FOREIGN KEY (author_id) REFERENCES AUTHOR(author_id) ON DELETE CASCADE
 );
