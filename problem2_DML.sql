@@ -1,5 +1,9 @@
 USE library;
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE BOOK;
+TRUNCATE TABLE AUTHOR;
 
+SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO AUTHOR (name, country) VALUES 
 ('Naguib Mahfouz', 'Egypt'),
 ('Agatha Christie', 'UK'),
@@ -12,3 +16,7 @@ INSERT INTO BOOK (title, price, author_id) VALUES
 ('And Then There Were None', 11.50, 2),
 ('1984', 13.99, 3),
 ('Animal Farm', 9.99, 3);
+
+
+
+
