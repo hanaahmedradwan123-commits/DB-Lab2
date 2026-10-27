@@ -36,6 +36,7 @@ CREATE TABLE BOOK (
     title VARCHAR(150) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     author_id INT NOT NULL,
+    constarint ck_bookprice CHECK (price >= 0),
     image_url VARCHAR(255) DEFAULT 'uploads/placeholder.jpg',
     FOREIGN KEY (author_id) REFERENCES AUTHOR(author_id) ON DELETE CASCADE
 );

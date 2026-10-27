@@ -492,7 +492,13 @@ def add_book():
             if not title or not price_text or not author_id:
                 return render_template("add_book.html", authors=authors, error="All required fields must be filled")
 
-            price = float(price_text)
+            try:
+                price = float(price_text)
+                if price < 0:
+                    return render_template("add_book.html", authors=authors, error="Price cannot be negative")
+            except ValueError:
+                return render_template("add_book.html", authors=authors, error="Invalid price value")
+
             if image and image.filename:
                 image_path = save_uploaded_image(image)
 
@@ -533,6 +539,13 @@ def edit_book(book_id):
             if not title or not price_text or not author_id:
                 return render_template("edit_book.html", book=book, authors=authors, error="All fields are required")
 
+            try:
+                price = float(price_text)
+                if price < 0:
+                    return render_template("edit_book.html", book=book, authors=authors, error="Price cannot be negative")
+            except ValueError:
+                return render_template("edit_book.html", book=book, authors=authors, error="Invalid price value")
+
             if image and image.filename:
                 new_image_path = save_uploaded_image(image)
 
@@ -541,7 +554,7 @@ def edit_book(book_id):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "UPDATE BOOK SET title = %s, price = %s, author_id = %s, image_url = %s WHERE book_id = %s",
-                    (title, float(price_text), author_id, image_path, book_id),
+                    (title, price, author_id, image_path, book_id),
                 )
             connection.commit()
 
