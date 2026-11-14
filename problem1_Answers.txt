@@ -1,0 +1,574 @@
+# Introduction to Database Systems — Lab 4
+## Problem 1: COMPANY Database — Answers
+### Fall 2026
+
+---
+
+## Q1.1 — INSERT
+
+### (a) Insert a new employee into an existing department
+
+```sql
+INSERT INTO EMPLOYEE
+(ssn, fname, lname, bdate, address, gender, salary, super_ssn, Dno)
+VALUES
+(107, 'Mariam', 'Adel', '2000-04-12', '15 Sea Road, Alexandria', 'F', 5000.00, 105, 2);
+```
+
+### (b) Insert a new project belonging to the same department
+
+```sql
+INSERT INTO PROJECT
+(Pnumber, Pname, Plocation, Dno)
+VALUES
+(50, 'AI Development', 'Alexandria', 2);
+```
+
+### (c) Display the inserted employee and project
+
+```sql
+SELECT * FROM EMPLOYEE WHERE ssn = 107;
+SELECT * FROM PROJECT WHERE Pnumber = 50;
+```
+
+Employee result:
+
+```text
+107 | Mariam | Adel | 2000-04-12 | 15 Sea Road, Alexandria | F | 5000.00 | 105 | 2
+```
+
+Project result:
+
+```text
+50 | AI Development | Alexandria | 2
+```
+
+### (d) Try inserting an employee with an invalid department number
+
+```sql
+INSERT INTO EMPLOYEE
+(ssn, fname, lname, bdate, address, gender, salary, super_ssn, Dno)
+VALUES
+(108, 'Test', 'Employee', '2001-01-01', 'Cairo', 'M', 4000.00, NULL, 99);
+```
+
+Error:
+
+```text
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails
+(company.employee, CONSTRAINT employee_ibfk_1 FOREIGN KEY (Dno)
+REFERENCES department (Dnumber))
+```
+
+Explanation: The insertion failed because department number 99 does not exist in DEPARTMENT. The foreign key constraint prevents assigning an employee to a nonexistent department.
+
+---
+
+## Q1.2 — UPDATE
+
+### (a) Give all employees in department 2 a 10% salary raise
+
+```sql
+UPDATE EMPLOYEE
+SET salary = salary * 1.10
+WHERE Dno = 2;
+
+SELECT ssn, fname, lname, salary
+FROM EMPLOYEE
+WHERE Dno = 2;
+```
+
+Output:
+
+```text
++-----+-------+--------+---------+
+| ssn | fname | lname  | salary  |
++-----+-------+--------+---------+
+| 105 | Omar  | Khaled | 6050.00 |
+| 107 | Mariam| Adel   | 5500.00 |
++-----+-------+--------+---------+
+```
+
+### (b) Change the location of a project
+
+```sql
+UPDATE PROJECT
+SET Plocation = 'Cairo'
+WHERE Pnumber = 50;
+
+SELECT * FROM PROJECT WHERE Pnumber = 50;
+```
+
+Output:
+
+```text
+50 | AI Development | Cairo | 2
+```
+
+### (c) Try changing an employee's department to a nonexistent department
+
+```sql
+UPDATE EMPLOYEE
+SET Dno = 99
+WHERE ssn = 107;
+```
+
+Error:
+
+```text
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails
+(company.employee, CONSTRAINT employee_ibfk_1 FOREIGN KEY (Dno)
+REFERENCES department (Dnumber))
+```
+
+Explanation: The update failed because department 99 does not exist. The foreign key constraint prevents the employee from being assigned to an invalid department. Mariam remains in department 2.
+
+---
+
+## Q1.3 — DELETE
+
+### (a) Delete one dependent and one WORKS_ON row
+
+```sql
+DELETE FROM DEPENDENT
+WHERE essn = 101 AND dependent_name = 'Adam Doe';
+
+DELETE FROM WORKS_ON
+WHERE essn = 101 AND Pno = 10;
+```
+
+Both DELETE statements executed successfully.
+
+Verification:
+
+```sql
+SELECT * FROM DEPENDENT;
+SELECT * FROM WORKS_ON
+WHERE essn = 101 AND Pno = 10;
+```
+
+The dependent Adam Doe was deleted. The selected WORKS_ON row returned:
+
+```text
+Empty set
+```
+
+The remaining dependent records were:
+
+```text
+102 | Laila Smith | F | 2018-02-14 | Daughter
+105 | Nour Khaled | F | 2016-09-21 | Daughter
+```
+
+### (b) Try deleting a department that still has employees
+
+```sql
+DELETE FROM DEPARTMENT
+WHERE Dnumber = 1;
+```
+
+Error:
+
+```text
+ERROR 1451 (23000): Cannot delete or update a parent row:
+a foreign key constraint fails
+(company.employee, CONSTRAINT employee_ibfk_1
+FOREIGN KEY (Dno) REFERENCES department (Dnumber))
+```
+
+Explanation: Department 1 cannot be deleted because employees still reference it through EMPLOYEE.Dno.
+
+To remove the department safely, related records must be handled first:
+1. Delete its DEPENDENT records.
+2. Delete its WORKS_ON records.
+3. Set the department manager reference to NULL if necessary.
+4. Delete its employees after handling any other references to them.
+5. Delete the department.
+
+### (c) Use a transaction and rollback
+
+```sql
+START TRANSACTION;
+
+DELETE FROM DEPENDENT;
+
+SELECT * FROM DEPENDENT;
+
+ROLLBACK;
+
+SELECT * FROM DEPENDENT;
+```
+
+After DELETE, the SELECT inside the transaction returned:
+
+```text
+Empty set
+```
+
+After ROLLBACK, the original remaining records were restored:
+
+```text
+102 | Laila Smith | F | 2018-02-14 | Daughter
+105 | Nour Khaled | F | 2016-09-21 | Daughter
+```
+
+Explanation: DELETE temporarily removed all dependent records inside the transaction. ROLLBACK cancelled the uncommitted deletion and restored the records.
+
+---
+
+## Q1.4 — WHERE and DISTINCT
+
+### (a) Employees earning between 3000 and 6000 who live in Houston
+
+```sql
+SELECT fname, lname, salary
+FROM EMPLOYEE
+WHERE salary BETWEEN 3000 AND 6000
+AND address LIKE '%Houston%'
+ORDER BY salary DESC;
+```
+
+Output:
+
+```text
++-------+-------+---------+
+| fname | lname | salary  |
++-------+-------+---------+
+| John  | Doe   | 6000.00 |
+| Jane  | Smith | 4500.00 |
+| Sara  | Ahmed | 3500.00 |
++-------+-------+---------+
+```
+
+### (b) Employees without supervisors
+
+```sql
+SELECT fname, lname
+FROM EMPLOYEE
+WHERE super_ssn IS NULL;
+```
+
+Output:
+
+```text
++-------+--------+
+| fname | lname  |
++-------+--------+
+| John  | Doe    |
+| Omar  | Khaled |
++-------+--------+
+```
+
+### (c) Display each department number only once
+
+```sql
+SELECT DISTINCT Dno
+FROM EMPLOYEE;
+```
+
+Output:
+
+```text
++------+
+| Dno  |
++------+
+| 1    |
+| 2    |
+| 3    |
++------+
+```
+
+---
+
+## Q1.5 — Aggregation
+
+Display the number of employees and the total, average, smallest, and largest salary.
+
+```sql
+SELECT
+    COUNT(*) AS employee_count,
+    SUM(salary) AS total_salary,
+    AVG(salary) AS average_salary,
+    MIN(salary) AS minimum_salary,
+    MAX(salary) AS maximum_salary
+FROM EMPLOYEE;
+```
+
+Output:
+
+```text
++----------------+--------------+----------------+----------------+----------------+
+| employee_count | total_salary | average_salary | minimum_salary | maximum_salary |
++----------------+--------------+----------------+----------------+----------------+
+| 7              | 40550.00     | 5792.857143    | 3500.00        | 8000.00        |
++----------------+--------------+----------------+----------------+----------------+
+```
+
+---
+
+## Q1.6 — GROUP BY
+
+Display the number of employees and their average salary for each department.
+
+```sql
+SELECT
+    Dno,
+    COUNT(*) AS employee_count,
+    AVG(salary) AS average_salary
+FROM EMPLOYEE
+GROUP BY Dno
+ORDER BY Dno;
+```
+
+Output:
+
+```text
++------+----------------+----------------+
+| Dno  | employee_count | average_salary |
++------+----------------+----------------+
+| 1    | 4              | 5500.000000    |
+| 2    | 2              | 5775.000000    |
+| 3    | 1              | 7000.000000    |
++------+----------------+----------------+
+```
+
+---
+
+## Q1.7 — HAVING
+
+### (a) Departments with more than 2 employees
+
+```sql
+SELECT
+    Dno,
+    COUNT(*) AS employee_count
+FROM EMPLOYEE
+GROUP BY Dno
+HAVING COUNT(*) > 2;
+```
+
+Output:
+
+```text
++------+----------------+
+| Dno  | employee_count |
++------+----------------+
+| 1    | 4              |
++------+----------------+
+```
+
+### (b) Departments with more than 2 employees earning above 3000
+
+```sql
+SELECT
+    Dno,
+    COUNT(*) AS employee_count
+FROM EMPLOYEE
+WHERE salary > 3000
+GROUP BY Dno
+HAVING COUNT(*) > 2;
+```
+
+Output:
+
+```text
++------+----------------+
+| Dno  | employee_count |
++------+----------------+
+| 1    | 4              |
++------+----------------+
+```
+
+Explanation: WHERE filters individual rows before grouping, while HAVING filters groups after GROUP BY.
+
+---
+
+## Q1.8 — INNER JOIN
+
+Display every employee's full name with their department name.
+
+```sql
+SELECT
+    CONCAT(e.fname, ' ', e.lname) AS employee_name,
+    d.Dname AS department_name
+FROM EMPLOYEE e
+INNER JOIN DEPARTMENT d
+    ON e.Dno = d.Dnumber
+ORDER BY e.ssn;
+```
+
+Output:
+
+```text
++---------------+-----------------+
+| employee_name | department_name |
++---------------+-----------------+
+| John Doe      | HR              |
+| Jane Smith    | HR              |
+| Ali Hassan    | HR              |
+| Sara Ahmed    | HR              |
+| Omar Khaled   | IT              |
+| Mona Ibrahim  | Finance         |
+| Mariam Adel   | IT              |
++---------------+-----------------+
+```
+
+---
+
+## Q1.9 — JOIN of Three Tables
+
+Display each employee's last name, project name, and hours worked.
+
+```sql
+SELECT
+    e.lname AS employee_last_name,
+    p.Pname AS project_name,
+    w.hours
+FROM WORKS_ON w
+INNER JOIN EMPLOYEE e
+    ON w.essn = e.ssn
+INNER JOIN PROJECT p
+    ON w.Pno = p.Pnumber
+ORDER BY e.lname, p.Pname;
+```
+
+Output:
+
+```text
++--------------------+-------------------+-------+
+| employee_last_name | project_name      | hours |
++--------------------+-------------------+-------+
+| Ahmed              | Recruitment Drive | 8.0   |
+| Doe                | ERP System        | 12.0  |
+| Hassan             | ERP System        | 25.0  |
+| Ibrahim            | ERP System        | 14.0  |
+| Khaled             | Web Redesign      | 18.0  |
+| Smith              | Recruitment Drive | 10.0  |
+| Smith              | Web Redesign      | 6.0   |
++--------------------+-------------------+-------+
+```
+
+---
+
+## Q1.10 — LEFT JOIN
+
+### (a) Display every department and its employee count, including departments with zero employees
+
+```sql
+SELECT
+    d.Dnumber,
+    d.Dname,
+    COUNT(e.ssn) AS employee_count
+FROM DEPARTMENT d
+LEFT JOIN EMPLOYEE e
+    ON d.Dnumber = e.Dno
+GROUP BY d.Dnumber, d.Dname
+ORDER BY d.Dnumber;
+```
+
+Output:
+
+```text
++---------+-----------+----------------+
+| Dnumber | Dname     | employee_count |
++---------+-----------+----------------+
+| 1       | HR        | 4              |
+| 2       | IT        | 2              |
+| 3       | Finance   | 1              |
+| 4       | Marketing | 0              |
++---------+-----------+----------------+
+```
+
+### (b) Display projects nobody works on
+
+```sql
+SELECT
+    p.Pnumber,
+    p.Pname
+FROM PROJECT p
+LEFT JOIN WORKS_ON w
+    ON p.Pnumber = w.Pno
+WHERE w.Pno IS NULL;
+```
+
+Output:
+
+```text
++---------+--------------------+
+| Pnumber | Pname              |
++---------+--------------------+
+| 40      | Mobile Application |
+| 50      | AI Development     |
++---------+--------------------+
+```
+
+---
+
+## Q1.11 — Self JOIN
+
+Display every employee with the name of their supervisor.
+
+```sql
+SELECT
+    CONCAT(e.fname, ' ', e.lname) AS employee_name,
+    CONCAT(s.fname, ' ', s.lname) AS supervisor_name
+FROM EMPLOYEE e
+LEFT JOIN EMPLOYEE s
+    ON e.super_ssn = s.ssn
+ORDER BY e.ssn;
+```
+
+Output:
+
+```text
++---------------+-----------------+
+| employee_name | supervisor_name |
++---------------+-----------------+
+| John Doe      | NULL            |
+| Jane Smith    | John Doe        |
+| Ali Hassan    | John Doe        |
+| Sara Ahmed    | Jane Smith      |
+| Omar Khaled   | NULL            |
+| Mona Ibrahim  | Omar Khaled     |
+| Mariam Adel   | Omar Khaled     |
++---------------+-----------------+
+```
+
+Explanation: This is a self join because EMPLOYEE is joined with itself. The alias e represents the employee, and s represents the supervisor. LEFT JOIN keeps employees who have no supervisor.
+
+---
+
+## Q1.12 — JOIN + GROUP BY + HAVING
+
+Display each project's name and total hours worked, only for projects with more than 20 hours, ordered by the largest total first.
+
+```sql
+SELECT
+    p.Pname AS project_name,
+    SUM(w.hours) AS total_hours
+FROM PROJECT p
+INNER JOIN WORKS_ON w
+    ON p.Pnumber = w.Pno
+GROUP BY p.Pnumber, p.Pname
+HAVING SUM(w.hours) > 20
+ORDER BY total_hours DESC;
+```
+
+Output:
+
+```text
++--------------+-------------+
+| project_name | total_hours |
++--------------+-------------+
+| ERP System   | 51.0        |
+| Web Redesign | 24.0        |
++--------------+-------------+
+```
+
+Explanation: INNER JOIN connects projects to their work assignments. GROUP BY groups the assignments by project, SUM calculates the total hours, and HAVING keeps only projects with more than 20 hours.
+
+---
+
+## End of Problem 1 — Lab 4
+
+All questions Q1.1 through Q1.12 have been executed in MySQL.
