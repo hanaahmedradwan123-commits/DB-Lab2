@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Reports (F2.3)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container" style="max-width: 900px; margin: 30px auto; padding: 20px;">
+    <h2>F2.3: Library Summary Reports</h2>
+    <p><a href="{{ url_for('library') }}">Back to Library</a></p>
+
+    <h3>(c) Whole Library Price Summary</h3>
+    <ul>
+        <li><strong>Total Price:</strong> ${{ "%.2f"|format(library_totals.total_price or 0) }}</li>
+        <li><strong>Cheapest Book:</strong> ${{ "%.2f"|format(library_totals.min_price or 0) }}</li>
+        <li><strong>Most Expensive Book:</strong> ${{ "%.2f"|format(library_totals.max_price or 0) }}</li>
+    </ul>
+
+    <h3>(a) Books & Average Price per Category</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+        <thead>
+            <tr style="background: #007bff; color: white;"><th>Category</th><th>Book Count</th><th>Average Price ($)</th></tr>
+        </thead>
+        <tbody>
+            {% for row in category_stats %}
+            <tr>
+                <td>{{ row.category_name }}</td>
+                <td>{{ row.book_count }}</td>
+                <td>{{ "%.2f"|format(row.avg_price or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>(b) Authors with At Least 2 Books</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #28a745; color: white;"><th>Author Name</th><th>Books Written</th></tr>
+        </thead>
+        <tbody>
+            {% for a in prolific_authors %}
+            <tr><td>{{ a.author_name }}</td><td>{{ a.book_count }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

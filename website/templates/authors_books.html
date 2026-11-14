@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authors & Books (F2.6)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container" style="max-width: 900px; margin: 30px auto; padding: 20px;">
+    <h2>F2.6: Authors & Books Analysis</h2>
+    <p><a href="{{ url_for('library') }}">Back to Library</a></p>
+
+    <h3>(a) Every Author & Book Count (Including 0)</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+        <thead>
+            <tr style="background: #007bff; color: white;"><th>ID</th><th>Author</th><th>Country</th><th>Books Written</th></tr>
+        </thead>
+        <tbody>
+            {% for a in author_counts %}
+            <tr><td>{{ a.author_id }}</td><td>{{ a.name }}</td><td>{{ a.country }}</td><td>{{ a.book_count }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>(b) Books Where Author & Publisher Share the Same Country</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #28a745; color: white;"><th>Book Title</th><th>Author</th><th>Publisher</th><th>Shared Country</th></tr>
+        </thead>
+        <tbody>
+            {% for row in same_country_books %}
+            <tr><td>{{ row.title }}</td><td>{{ row.author_name }}</td><td>{{ row.publisher_name }}</td><td>{{ row.country }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

@@ -6,25 +6,45 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container" style="max-width: 500px; margin: 40px auto; padding: 25px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+<div class="container" style="max-width: 520px !important;">
     <h2>Add New Book</h2>
-    {% if error %}<p style="color: red;">{{ error }}</p>{% endif %}
+    {% if error %}<p style="color: var(--danger);">{{ error }}</p>{% endif %}
     <form method="POST" enctype="multipart/form-data">
-        <p><label><strong>Title:</strong></label><br><input type="text" name="title" required style="width: 100%; padding: 8px; margin-top: 5px;"></p>
-        <p><label><strong>Price ($):</strong></label><br><input type="number" step="0.01" min="0" name="price" required style="width: 100%; padding: 8px; margin-top: 5px;"></p>
+        <p><label><strong>Title:</strong></label><br><input type="text" name="title" required style="width: 100%; margin-top: 5px;"></p>
+        <p><label><strong>Price ($):</strong></label><br><input type="number" step="0.01" min="0" name="price" required style="width: 100%; margin-top: 5px;"></p>
+        <p><label><strong>Publish Year:</strong></label><br><input type="number" min="1000" max="2030" name="publish_year" placeholder="e.g. 2024" style="width: 100%; margin-top: 5px;"></p>
         <p><label><strong>Author:</strong></label><br>
-            <select name="author_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            <select name="author_id" required style="width: 100%; margin-top: 5px;">
                 <option value="" disabled selected>Select Author</option>
                 {% for author in authors %}
                     <option value="{{ author.author_id }}">{{ author.name }}</option>
                 {% endfor %}
             </select>
         </p>
+        <p><label><strong>Publisher:</strong></label><br>
+            <select name="publisher_id" required style="width: 100%; margin-top: 5px;">
+                <option value="" disabled selected>Select Publisher</option>
+                {% for pub in publishers %}
+                    <option value="{{ pub.publisher_id }}">{{ pub.name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p><label><strong>Category:</strong></label><br>
+            <select name="category_id" required style="width: 100%; margin-top: 5px;">
+                <option value="" disabled selected>Select Category</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </p>
         <p><label><strong>Cover Image:</strong></label><br><input type="file" name="image" accept="image/*" style="margin-top: 5px;"></p>
         <br>
-        <button type="submit" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Save Book</button>
-        <a href="{{ url_for('library') }}" style="margin-left: 10px; color: #666;">Cancel</a>
+        <button type="submit" class="btn btn-success">Save Book</button>
+        <a href="{{ url_for('library') }}" style="margin-left: 12px;">Cancel</a>
     </form>
 </div>
+<script>
+    if (localStorage.getItem("theme") === "dark") document.body.classList.add("dark-mode");
+</script>
 </body>
 </html>

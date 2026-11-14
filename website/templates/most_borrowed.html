@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Most Borrowed (F2.5)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container" style="max-width: 900px; margin: 30px auto; padding: 20px;">
+    <h2>F2.5: Most Borrowed Books & Top Member</h2>
+    <p><a href="{{ url_for('library') }}">Back to Library</a></p>
+
+    <h3>Top Member (Most Loans)</h3>
+    {% if top_member %}
+        <p style="font-size: 1.1em; background: #e9ecef; padding: 12px; border-radius: 5px;">
+            <strong>{{ top_member.name }}</strong> — {{ top_member.loan_count }} total loans
+        </p>
+    {% endif %}
+
+    <h3>Top 3 Most Borrowed Books</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #007bff; color: white;"><th>Rank</th><th>Book Title</th><th>Total Loans</th></tr>
+        </thead>
+        <tbody>
+            {% for b in top_books %}
+            <tr><td>{{ loop.index }}</td><td>{{ b.title }}</td><td>{{ b.loan_count }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
